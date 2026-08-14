@@ -267,7 +267,8 @@
           alert("התחברת בהצלחה!");
         })
         .catch((error) => {
-          alert("שגיאה בהתחברות. ודא שהאימייל והסיסמה נכונים.");
+          console.error("Auth Error:", error);
+          alert("שגיאה בהתחברות: " + error.code + "\n" + error.message);
         });
     };
 
