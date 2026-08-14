@@ -194,16 +194,61 @@
     let selectedFile = null;
     let isAdmin = false;
 
-    window.toggleAdmin = function() {
-      const password = prompt("הכנס סיסמת מנהל:");
-      if (password && btoa(password) === "MTIzNA==") {
+    const loginModal = document.getElementById('loginModal');
+    const emailInput = document.getElementById('adminEmail');
+    const passwordInput = document.getElementById('adminPassword');
+    const adminToggleBtn = document.getElementById('adminToggleBtn');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
         isAdmin = true;
         document.getElementById('adminUploadSection').classList.remove('hidden');
         document.body.classList.add('admin-mode');
-        alert("אזור מנהל פעיל כעת.");
-      } else if (password !== null) {
-        alert("סיסמה שגויה!");
+        adminToggleBtn.innerHTML = `<i class="fa-solid fa-arrow-right-from-bracket text-[10px]"></i> <span>התנתק</span>`;
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.classList.remove('hidden'));
+      } else {
+        isAdmin = false;
+        document.getElementById('adminUploadSection').classList.add('hidden');
+        document.body.classList.remove('admin-mode');
+        adminToggleBtn.innerHTML = `<i class="fa-solid fa-lock text-[10px]"></i> <span>כניסת מנהל</span>`;
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.classList.add('hidden'));
       }
+    });
+
+    window.toggleAdmin = function() {
+      if (isAdmin) {
+        signOut(auth).then(() => alert("התנתקת בהצלחה."));
+      } else {
+        loginModal.classList.remove('hidden');
+        loginModal.classList.add('flex');
+      }
+    };
+
+    window.closeLoginModal = function() {
+      loginModal.classList.add('hidden');
+      loginModal.classList.remove('flex');
+    };
+
+    window.loginAdmin = function() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      if (!email || !password) {
+        alert("אנא הזן אימייל וסיסמה");
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          closeLoginModal();
+          emailInput.value = '';
+          passwordInput.value = '';
+          alert("התחברת בהצלחה!");
+        })
+        .catch((error) => {
+          console.error("Auth Error:", error);
+          alert("שגיאה בהתחברות: " + error.code + "\n" + error.message);
+        });
     };
 
     window.previewSelectedImage = function(event) {
